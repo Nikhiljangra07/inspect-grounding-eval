@@ -1,15 +1,16 @@
 # inspect-grounding-eval
 
-A small [Inspect](https://inspect.aisi.org.uk/) evaluation demonstrating **certified numeric grounding** — a miniature port of the verification idea from [cube-program](https://github.com/Nikhiljangra07/cube-program).
+A four-example [Inspect](https://inspect.aisi.org.uk/) demonstration of **code-only numeric checks**, adapted from the verification work in [cube-program](https://github.com/Nikhiljangra07/cube-program).
 
 ## The idea
 
-Most grounding checks ask "does the answer look supported?" This scorer asks something stricter, and answers it **in code, with no judge model**:
+The existing `certified_grounding()` function scores answers **in code, with no judge model**:
 
-1. Does the answer contain the correct number?
-2. Is **every** number the answer asserts traceable to the source passage (or the asked-for arithmetic result)?
+1. For three numeric examples, the expected numeric token must appear in the answer.
+2. Every numeric token extracted by the regex must occur in the input or match the hand-authored expected result.
+3. For the refusal example, the answer must contain the substring `not stated`.
 
-A plausible answer with one unsourced figure fails. A model that invents an answer when the passage doesn't contain one fails (one sample requires an explicit "not stated in the passage" refusal). That is the *certified* part: grounding is machine-verified against the source, not eyeballed — the same discipline as cube-program's five-stage harness (machine-verified extraction → code-computed comparisons), scaled down to a single Inspect scorer.
+These are token and phrase checks, not semantic certification. The scorer does not independently compute the arithmetic, bind a value to the correct entity or unit, or verify other claims. Reusing an allowed number in a false statement can pass; the refusal branch can also pass an answer containing contradictory additions. The function name is retained for compatibility.
 
 ## Run it
 
@@ -30,7 +31,7 @@ ANTHROPIC_API_KEY=... ./.venv/bin/inspect eval grounding_task.py --model anthrop
 | `mockllm/model` (smoke test) | 0/4 | Canned text — scorer correctly rejects ungrounded output |
 | `anthropic/claude-haiku-4-5` | 4/4 | Includes the honest-refusal sample ("not stated in the passage") |
 
-Both eval logs were produced by Inspect; the scorer's pass/fail is computed entirely in code.
+Both eval logs were produced by Inspect; pass/fail is computed entirely in code. These four examples demonstrate the mechanism, not a model-safety benchmark or a population-level accuracy estimate. The scores above use the original scorer and have not been recomputed for this documentation correction. See Cube's [claims amendment](https://github.com/Nikhiljangra07/cube-program/blob/master/ERRATA_2026-10-14.md) for the limits of the broader verification claims.
 
 ## Files
 
